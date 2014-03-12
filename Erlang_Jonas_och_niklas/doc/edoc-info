@@ -1,0 +1,4 @@
+%% encoding: UTF-8
+{application,'Problem set 3 - OSM (1DT089) 2013'}.
+{packages,[]}.
+{modules,[add,death,fifo,list,pfifo,tutorial,utils]}.
