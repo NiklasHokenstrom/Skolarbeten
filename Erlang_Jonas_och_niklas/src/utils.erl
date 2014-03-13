@@ -10,8 +10,46 @@
 %% To use EUnit we must include this.
 -include_lib("eunit/include/eunit.hrl").
 
--compile(export_all). 
+-compile(export_all).
 
+
+%% @ Generates a string composed of N Chars
+%% === Example
+%% <div class = "example">```
+%% utils:repeat($-,5).
+%% "-----"
+%% </div>
+
+repeat(Char, N) ->  
+    [Char || _ <- lists:seq(1,N)].
+
+print_number(A, Base, Pos) ->
+    io:format(repeat($ ,Pos) ++ integer_to_list(A,Base) ++ "~n").
+
+print_line(N) ->
+    io:format("+ " ++ repeat($-, N) ++ "~n").
+
+number_of_digits(A,Base) ->
+    trunc(math:log(A)/math:log(Base))+1.
+
+add_lists(Al,Bl) ->
+    add_lists(Al,Bl,[]).
+   
+add_lists([],[],Acc) ->
+    lists:reverse(Acc);
+    
+add_lists([Ai|Al],[Bi|Bl],Acc) ->
+    add_lists(Al,Bl,[(Ai+Bi)|Acc]).
+    
+    
+print_result(A,B,Base) ->
+    Pos = number_of_digits(A+B,Base) + 3,
+    print_number(number_of_digits(A+B, Base) - number_of_digits(A, Base), Base, 3),
+    io:format("   -~n"),
+    print_number(A, Base, Pos - number_of_digits(A,Base)),
+    print_number(B, Base, Pos - number_of_digits(B,Base)),
+    print_line(Pos-1),
+    print_number(A+B, Base, Pos - number_of_digits(A+B,Base)).
 
 %% @doc Generates a list of lists of increasing sequences of integers
 %% starting with the empty list and ending with [1,2, ..., N].
@@ -20,7 +58,7 @@
 %% > utils:seqs(5).
 %% [[],[1],[1,2],[1,2,3],[1,2,3,4],[1,2,3,4,5]]'''
 %% </div>
--spec seqs(N::integer()) -> [[integer()]].
+
 
 seqs(N) ->
     %% NOTE: Simply using a list comprehension such as [[]] ++
@@ -114,18 +152,22 @@ lqr(L, N) ->
 
 
 split(L, N) ->
-    lists:reverse(split(L,N,[])).
+    split(L,N,[]).
 
 %% An auxiliary recursive split function
+split([], _, Lists) ->
+    Lists;
 split(L, 1, Lists) ->
     [L|Lists];
 split(L, N, Lists) ->
-    {L1, L2} = lists:split(length(L) div N, L),
-    if length(L2) > N ->
-	    split(L2, N-1, [L1|Lists]);
+    {Len,Q,_} = lqr(L, N),
+    if Len >= N ->
+	    {L1, L2} = lists:split(Len - Q, L),
+	    split(L1, N-1, [L2|Lists]);
        true ->
-	    ([L1, L2|Lists])
+	    split(L, N-1, Lists)
     end.
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
