@@ -1,25 +1,28 @@
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 
 
-public class BrowserMenu extends JFrame {
+public class BrowserMenu extends JPanel {
 	
 	Jinterface_bank_client client = new Jinterface_bank_client("127.0.0.1", 3010);
 	//int browserIp[] = {127,0,0,1};
 	String[] columnNames = {"Server name", "Ip", ""};
 	Object[][] data;
+	Action join;
 	
-	public BrowserMenu() {
+	public BrowserMenu(final JFrame parent) {
 		Object[][] tmp = client.available();
 		data = new Object[tmp.length][3];
 		for(int i = 0; i < tmp.length; i++) {
@@ -29,12 +32,12 @@ public class BrowserMenu extends JFrame {
 			data[i][2] = "Join";
 		}
 		
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setTitle("Creating a Table Example");
-        this.setSize(700,200);
+        //this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //this.setTitle("Creating a Table Example");
+        //this.setSize(700,200);
       
         //This will center the JFrame in the middle of the screen
-        this.setLocationRelativeTo(null);
+        //this.setLocationRelativeTo(null);
         
         //Create the JTable using the ExampleTableModel implementing 
         //the AbstractTableModel abstract class
@@ -53,11 +56,10 @@ public class BrowserMenu extends JFrame {
         
         //Place the JTable object in a JScrollPane for a scrolling table
         JScrollPane tableScrollPane = new JScrollPane(table);
-
         add(tableScrollPane);
         setVisible(true);
         
-    	Action join = new AbstractAction()
+    	join = new AbstractAction()
 		{
 
 			@Override
@@ -68,14 +70,17 @@ public class BrowserMenu extends JFrame {
 		        String ipString = (String)table.getValueAt(modelRow,1);
 		        int[] ip = Utility.stringToIp(ipString);
 		        
-		        Game game = new Game();
+		        Game game = new Game(parent);
 		        Player clientPlayer = new Player(20,20, "player1");
-		        System.out.println(getFocusOwner());
-                
+		      //  System.out.println(getFocusOwner());
+
 		        clientPlayer.addPlayerToServer(ip, client);
-                game.run(client, clientPlayer);
-                System.exit(0);
-				
+		        //game.run(client, clientPlayer);
+
+		        //System.exit(0);
+		        parent.setContentPane(game);
+		        parent.validate();
+		        game.run(client, clientPlayer);
 			}
 		};
 		
@@ -83,11 +88,10 @@ public class BrowserMenu extends JFrame {
 		buttonColumn.setMnemonic(KeyEvent.VK_D);
 	}
 	
-	
-	public static void main(String [] args){
+/*	public static void main(String [] args){
 		
 		BrowserMenu bm = new BrowserMenu();
 		
 	}
-	
+	*/
 }

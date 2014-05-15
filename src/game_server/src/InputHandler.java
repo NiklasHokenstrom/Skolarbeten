@@ -26,8 +26,8 @@ public class InputHandler implements KeyListener
         {
                 if (keyCode > 0 && keyCode < 256)
                 {
-                		System.out.println("______KEY IS DOWN______" + keyCode);
-                		System.out.println(keys[keyCode]);
+                		//System.out.println("______KEY IS DOWN______" + keyCode);
+                		//System.out.println(keys[keyCode]);
                 		return keys[keyCode];
                 }
                

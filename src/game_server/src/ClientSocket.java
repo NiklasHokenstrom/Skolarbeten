@@ -10,21 +10,35 @@ import com.ericsson.otp.erlang.OtpInputStream;
 import com.ericsson.otp.erlang.OtpOutputStream;
 
 public class ClientSocket {
-    public void run() throws OtpErlangDecodeException {
+	private Socket socket; 
+	private OutputStream out;
+	private DataOutputStream dos;
+	private DataInputStream fromServer;
+	
+	public ClientSocket (String host, int port) {
+		try {
+			this.socket = new Socket (InetAddress.getByName(host), port);
+			this.out = socket.getOutputStream();
+			this.dos = new DataOutputStream(out);
+			this.fromServer = new DataInputStream(socket.getInputStream());
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+    /*public void run() throws OtpErlangDecodeException {
 	try {
 	    int serverPort = 3010;
 	    InetAddress host = InetAddress.getByName("127.0.0.1"); 
 	    System.out.println("Connecting to server on port " + serverPort); 
 
 	    Socket socket = new Socket(host,serverPort); 
-	    //Socket socket = new Socket("127.0.0.1", serverPort);
 	    System.out.println("Just connected to " + socket.getRemoteSocketAddress()); 
-	   /* PrintWriter toServer = 
-		new PrintWriter(socket.getOutputStream(),true);
-	    // BufferedReader fromServer = 
-	    // new BufferedReader(new InputStreamReader
-	    // (socket.getInputStream()));
-	    */
 	    
 	    OutputStream out = socket.getOutputStream(); 
 	    DataOutputStream dos = new DataOutputStream(out);
@@ -38,11 +52,11 @@ public class ClientSocket {
 		System.arraycopy(tmp, 0, data, prepend.length, tmp.length);
 	    
 	    dos.write(data);
-	    
+	   */ 
 	    //toServer.println("Hello from " + socket.getLocalSocketAddress()); 
 
 	    /* DataInputStream to read from TCP */
-	    DataInputStream fromServer = 
+	    /*DataInputStream fromServer = 
 		new DataInputStream(socket.getInputStream());
 	    //int receivedSize = fromServer.readInt();
 	    //System.out.println("Size: " + receivedSize);
@@ -53,23 +67,6 @@ public class ClientSocket {
 		
 		OtpErlangObject answer = (new OtpInputStream(message)).read_any();
 		System.out.println(answer);
-	    /*
-	    int pos0 = message[0];
-	    int pos1 = message[1];
-	    int pos2 = message[2];
-	    int pos3 = message[3];
-
-	    // readLine waits for <<10>>, or "\n"
-	    // String line = fromServer.readLine();
-	    System.out.println("Client received: " + "<<" + pos0 + "," + 
-			       pos1 + "," + pos2 + "," +  pos3 + 
-			       ">> from Server");
-	    
-	    System.out.println("Press ENTER to close the connection.");
-	    System.in.read();
-	    */
-	    //toServer.close();
-	    fromServer.close();
 	    socket.close();
 	}
 	catch(UnknownHostException ex) {
@@ -79,14 +76,64 @@ public class ClientSocket {
 	    e.printStackTrace();
 	}
     }
+	*/
 	
+	public OtpErlangObject sendTCP(OtpErlangObject arg) {
+		OtpOutputStream availableStream = new OtpOutputStream(arg);
+		byte[] data = Utility.arrayPrepend(availableStream);
+		try {
+			dos.write(data);
+			byte[] message = new byte[248];
+			fromServer.read(message);
+
+			OtpErlangObject answer = (new OtpInputStream(message)).read_any();
+			return answer;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (OtpErlangDecodeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/*public OtpErlangObject sendTCP(String arg) {
+		//OtpOutputStream availableStream = new OtpOutputStream(arg);
+		//byte[] data = Utility.arrayPrepend(availableStream);
+		byte[] tmp = arg.getBytes();
+		byte[] data = Utility.arrayPrepend(tmp);
+		for (int i = 0; i < data.length; i++){
+			System.out.print(data[i]);
+		}
+		System.out.println();
+		try {
+			dos.write(data);
+			byte[] message = new byte[248];
+			fromServer.read(message);
+
+			OtpErlangObject answer = (new OtpInputStream(message)).read_any();
+			return answer;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (OtpErlangDecodeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}*/
     public static void main(String[] args) {
-	ClientSocket client = new ClientSocket();
-	try {
+	ClientSocket client = new ClientSocket("127.0.0.1", 3011);
+	OtpErlangAtom add_table = new OtpErlangAtom("add_table");
+	OtpErlangObject answer = client.sendTCP(add_table);
+	System.out.println(answer);
+	
+	/*try {
 		client.run();
 	} catch (OtpErlangDecodeException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
-	}
+	}*/
     }
 }

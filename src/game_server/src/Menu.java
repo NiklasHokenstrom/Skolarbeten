@@ -3,14 +3,14 @@ import javax.swing.*;
 
 import java.awt.event.*;
 
-public class Menu extends JFrame
+public class Menu extends JPanel
 {
-	private static final int WIDTH = 400;
-	private static final int HEIGHT = 300;
+	//private static final int WIDTH = 400;
+	//private static final int HEIGHT = 300;
 
 	private JLabel dConnect;
 	private JTextField ip;
-	private JButton serverBrowser, connect;
+	private JButton sbButton, connect;
 
 	public Menu()
 	{
@@ -19,17 +19,17 @@ public class Menu extends JFrame
 
 
 		//SPecify handlers for each button and add (register) ActionListeners to each button.
-		serverBrowser = new JButton("Server Browser");
-		sbButtonHandler sbHandler = new sbButtonHandler();
-		serverBrowser.addActionListener(sbHandler);
+		sbButton = new JButton("Server Browser");
+		//sbButtonHandler sbHandler = new sbButtonHandler();
+		//serverBrowser.addActionListener(sbHandler);
 
 		connect = new JButton("Connect");
-		connectButtonHandler cbHandler = new connectButtonHandler();
-		connect.addActionListener(cbHandler);
+		//connectButtonHandler cbHandler = new connectButtonHandler();
+		//connect.addActionListener(cbHandler);
 
-		Container panel = getContentPane();
-		GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
+		//Container panel = getContentPane();
+		GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
 
 		layout.setAutoCreateGaps(true);
 		layout.setAutoCreateContainerGaps(true);
@@ -39,7 +39,7 @@ public class Menu extends JFrame
 				layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
 						.addComponent(dConnect)
-						.addComponent(serverBrowser))
+						.addComponent(sbButton))
 						.addComponent(ip)
 						.addComponent(connect)
 				);
@@ -50,15 +50,20 @@ public class Menu extends JFrame
 						.addComponent(dConnect)
 						.addComponent(ip)
 						.addComponent(connect))
-						.addComponent(serverBrowser)
+						.addComponent(sbButton)
 				);
 
 		setSize(WIDTH, HEIGHT);
-		setVisible(true);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setFocusable(true);
+		requestFocusInWindow();
+		//setVisible(true);
+		//setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
 
-
+	void setSbButton (ActionListener action) {
+		sbButton.addActionListener(action);
+	}
+/*
 	private class connectButtonHandler implements ActionListener
 	{
 		public void actionPerformed(ActionEvent e)
@@ -84,18 +89,18 @@ public class Menu extends JFrame
 
 	private class sbButtonHandler implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			System.out.println(getFocusOwner());
+			//System.out.println(getFocusOwner());
 			BrowserMenu bm = new BrowserMenu();
 		}
-	}
+	}*/
 
 
-	public static void main(String [] args) {
+	/*public static void main(String [] args) {
 		SwingUtilities.invokeLater(new Runnable () {
 		@Override	
 			public void run() {
 				Menu menu = new Menu();
 			}
 		});
-	}
+	}*/
 }

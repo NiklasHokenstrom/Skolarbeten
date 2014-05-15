@@ -2,21 +2,24 @@
 //import InputHandler;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-import javax.swing.JDialog;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+
 
 import com.ericsson.otp.erlang.OtpErlangDecodeException;
 
 /**
  * Main class for the game
  */
-public class Game extends JFrame
+public class Game extends JPanel
 {       
 	static String  player123 = "player1";
         /**
@@ -27,24 +30,19 @@ public class Game extends JFrame
         int fps = 30;
         int windowWidth = 500;
         int windowHeight = 500;
-       
+        final JFrame parent;
         BufferedImage backBuffer;
         Insets insets;
         InputHandler input;
-       
+        
         int x = 0;
-        //int[] ip;
-        //Jinterface_bank_client client;
-        //Player player;
-        //static int[] ip = {127,0,0,1};
        
-        public Game() {
-        	//this.ip = ip;
-        	
-            setTitle("Game Tutorial");
+        public Game(JFrame parent) {
+        	this.parent = parent;
+            //setTitle("Game Tutorial");
             setSize(windowWidth, windowHeight);
-            setResizable(false);
-            setDefaultCloseOperation(EXIT_ON_CLOSE);
+            //setResizable(false);
+            //setDefaultCloseOperation(EXIT_ON_CLOSE);
 
             insets = getInsets();
             setSize(insets.left + windowWidth + insets.right,
@@ -53,82 +51,43 @@ public class Game extends JFrame
             backBuffer = new BufferedImage(windowWidth, windowHeight, BufferedImage.TYPE_INT_RGB);
             input = new InputHandler(this);
             setFocusable(true);
-           // setRequestFocusEnabled(true);
             setVisible(true);
-           // this.toFront();  
         }
 
         
         public static void main(String[] args)
         {
-        		int[] local = {127,0,0,1};
-                //Game game = new Game(local);
-                final Jinterface_bank_client client = new Jinterface_bank_client("127.0.0.1", 3010);
-                client.add("newServ", local);
-                client.available();
-                final Player clientPlayer = new Player(10,10, "player1");
-                clientPlayer.addPlayerToServer(local, client);
-                Player player2 = new Player(20,20, "player2");
-                player2.addPlayerToServer(local, client);
-               
-                final Game game = new Game();/*
-               SwingWorker worker = new SwingWorker<Void, Void>() {
-                	@Override
-                	public Void doInBackground() {
-                		game.run(client, clientPlayer);
-                		return null;
-                	}
-                };*/
-                game.run(client, clientPlayer);
-        		//System.exit(0);
-        		/*
-                SwingUtilities.invokeLater(new Runnable() {
-                	public void run () {
+        	JFrame frame = new JFrame();
+        	int[] local = {127,0,0,1};
+        	final Jinterface_bank_client client = new Jinterface_bank_client("127.0.0.1", 3010);
+        	client.add("newServ", local);
+        	client.available();
+        	Player clientPlayer = new Player(10,10, "player1");
+        	clientPlayer.addPlayerToServer(local, client);
+        	Player player2 = new Player(20,20, "player2");
+        	player2.addPlayerToServer(local, client);
 
-                		Game game = new Game(local);
-                		ArrayList<Player> playerList = new ArrayList<Player>();
-                		//playerList.add(player1);
-                		//playerList.add(player2);
-
-                	
-                		// SwingUtilities.invokeLater(game.runGame);
-                		game.run(client, clientPlayer);
-                		System.exit(0);
-                	}
-                });
-            */
+        	Game game = new Game(frame);
+        	frame.add(game);
+        	frame.setVisible(true);
+        	game.run(client, clientPlayer);
+        	//System.exit(0);
         }
        
         /**
          * This method starts the game and runs it in a loop
          */
-        //Runnable runGame = new Runnable() { 
         public void run(final Jinterface_bank_client client, final Player clientPlayer)
         {
         	System.out.println("In run method...");
-        	//initialize();
-        	//SwingWorker worker = new SwingWorker<Void, Void>() {
-        		//@Override
-        		//public Void doInBackground() {
         			while(isRunning)
         			{
-        				
-        				System.out.println("Focusable " + this.isFocusable());
-        				System.out.println("Enabled: " + isEnabled());
-        				System.out.println("Displayable: " + isDisplayable());
-        				System.out.println("Visible: " + isVisible());
-        				requestFocus();
-        				System.out.println("Request focus in window: " + requestFocusInWindow());
-        				System.out.println("Focused : " +this.isFocused());
-        				System.out.println("Focus Owner: " + getFocusOwner());
-
         				long time = System.currentTimeMillis();
         				final ArrayList<Player> playerList = client.getAllPos();
         				update(client, clientPlayer);
         				System.out.println("Event is Dispatch thread: " +SwingUtilities.isEventDispatchThread());
         				System.out.println();
         				draw(playerList);
-        				//  draw(playerList);
 
         				//  delay for each frame  -   time it took for one frame
         				time = (1000 / fps) - (System.currentTimeMillis() - time);
@@ -142,9 +101,6 @@ public class Game extends JFrame
         					catch(Exception e){}
         				}
         			}
-        			//return null;
-        		//}
-        	//};
 
         	setVisible(false);
         }
@@ -168,6 +124,16 @@ public class Game extends JFrame
                 input = new InputHandler(this);
         }*/
        
+        Action createMovementAction (final Jinterface_bank_client client, final Player playerObj, final String direction) {
+        	Action movement = new AbstractAction () {
+        		@Override
+        		public void actionPerformed(ActionEvent e) {
+        			client.move(playerObj.getPlayerName(), direction, 5);
+        		}
+        	};
+        	return movement;
+        }
+        
         /**
          * This method will check for input, move things
          * around and check for win conditions, etc
@@ -175,7 +141,20 @@ public class Game extends JFrame
          */
         void update(Jinterface_bank_client client, Player playerObj)
         {
-        		System.out.println("__________Updating_________");
+        	/***** Utskrifter för debuggning **********
+            */
+        	System.out.println("Focusable " + isFocusable());
+			System.out.println("Enabled: " + isEnabled());
+			System.out.println("Displayable: " + isDisplayable());
+			System.out.println("Visible: " + isVisible());
+			grabFocus();
+			requestFocus();
+			//System.out.println("Request focus in window: " + requestFocusInWindow());
+			System.out.println("Request focus in window: " + requestFocusInWindow());
+			//System.out.println("Focused : " + isFocused());
+			System.out.println("Focus Owner: " + parent.getFocusOwner());
+			
+				//System.out.println("__________Updating_________");
                 if (input.isKeyDown(KeyEvent.VK_RIGHT))
                 {
                         //x += 5;
@@ -197,15 +176,15 @@ public class Game extends JFrame
                 //	x -= 5;
                 }
                client.updatePos(playerObj.getPlayerName(), playerObj);
+               
         }
        
         /**
          * This method will draw everything
          */
-        // void draw(ArrayList<Player> playerList)
          void draw(ArrayList<Player> playerList)
         {       
-                Graphics g = getGraphics();
+                Graphics g = parent.getGraphics();
                
                 Graphics bbg = backBuffer.getGraphics();
                
@@ -216,7 +195,13 @@ public class Game extends JFrame
                 for(Player player : playerList) {
                 	bbg.drawOval(player.getX(), player.getY(), 20, 20);
                 }
-               
+                /*
+                System.out.println("Graphics: " + g);
+               System.out.println("backBuffer: " + backBuffer);
+               System.out.println("insetsLeft: " + insets.left);
+               System.out.println("insetsTop: " + insets.top);
+               System.out.println("this: " + this);
+               */
                 g.drawImage(backBuffer, insets.left, insets.top, this);
         } 
 }

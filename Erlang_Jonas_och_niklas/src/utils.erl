@@ -5,51 +5,21 @@
 
 -module(utils). 
 
--export([seqs/1, filter/2, split/2]).
+-export([seqs/1, filter/2, split/2, repeat/2]).
 
 %% To use EUnit we must include this.
 -include_lib("eunit/include/eunit.hrl").
 
--compile(export_all).
+-compile(export_all). 
 
-
-%% @ Generates a string composed of N Chars
-%% === Example
-%% <div class = "example">```
-%% utils:repeat($-,5).
-%% "-----"
+%% @doc Generates a list of N repeated Chars.
+%% === Example ===
+%% <div class="example">```
+%% > utils:repeat($&, 7).
+%% "&&&&&&&'''
 %% </div>
-
 repeat(Char, N) ->  
     [Char || _ <- lists:seq(1,N)].
-
-print_number(A, Base, Pos) ->
-    io:format(repeat($ ,Pos) ++ integer_to_list(A,Base) ++ "~n").
-
-print_line(N) ->
-    io:format("+ " ++ repeat($-, N) ++ "~n").
-
-number_of_digits(A,Base) ->
-    trunc(math:log(A)/math:log(Base))+1.
-
-add_lists(Al,Bl) ->
-    add_lists(Al,Bl,[]).
-   
-add_lists([],[],Acc) ->
-    lists:reverse(Acc);
-    
-add_lists([Ai|Al],[Bi|Bl],Acc) ->
-    add_lists(Al,Bl,[(Ai+Bi)|Acc]).
-    
-    
-print_result(A,B,Base) ->
-    Pos = number_of_digits(A+B,Base) + 3,
-    print_number(number_of_digits(A+B, Base) - number_of_digits(A, Base), Base, 3),
-    io:format("   -~n"),
-    print_number(A, Base, Pos - number_of_digits(A,Base)),
-    print_number(B, Base, Pos - number_of_digits(B,Base)),
-    print_line(Pos-1),
-    print_number(A+B, Base, Pos - number_of_digits(A+B,Base)).
 
 %% @doc Generates a list of lists of increasing sequences of integers
 %% starting with the empty list and ending with [1,2, ..., N].
@@ -58,7 +28,7 @@ print_result(A,B,Base) ->
 %% > utils:seqs(5).
 %% [[],[1],[1,2],[1,2,3],[1,2,3,4],[1,2,3,4,5]]'''
 %% </div>
-
+-spec seqs(N::integer()) -> [[integer()]].
 
 seqs(N) ->
     %% NOTE: Simply using a list comprehension such as [[]] ++
@@ -113,7 +83,6 @@ filter_collect(N,R) ->
     end.
 
 
-
 lqr(L, N) ->
     Len = length(L),
 
@@ -150,7 +119,6 @@ lqr(L, N) ->
       T :: term(),
       N :: integer().
 
-
 split(L, N) ->
     split(L,N,[]).
 
@@ -167,7 +135,6 @@ split(L, N, Lists) ->
        true ->
 	    split(L, N-1, Lists)
     end.
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -286,3 +253,4 @@ split_stat_test_() ->
     
     [Assert(L,N) ||  L <- seqs(33), N <- lists:seq(1,length(L)+5)].
     
+

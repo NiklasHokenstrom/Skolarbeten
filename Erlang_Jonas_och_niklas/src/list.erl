@@ -36,6 +36,17 @@ pmax(List, N) ->
     Death = death:start(60),
     pmax(List, N, Death).
 
+pmax(List, N, Death) when length(List) > N ->
+    Lists = split(List, N),
+    CollectPID = self(),
+    Pid_list = [{spawn_link(fun() -> worker(L, CollectPID, Death) end), L} || L <- Lists],
+    Maxes = collect(length(Lists), [], Pid_list),
+    pmax(Maxes, N, Death);
+
+pmax(List, _, _) ->
+    list:max(List). 
+
+
 %% @doc Split a list L into lists of lengt N. 
 -spec split(List, N) -> [list()] when List::list(),
 				      N::integer().
@@ -44,6 +55,7 @@ pmax(List, N) ->
 %%
 %% Example: When splitting a list of length 5 into list of length 2 we
 %% get two lists of lenght 2 and one list of length 1.
+
 
 %% Can we stop splitting?
 split(L, N) when length(L) < N ->
@@ -61,36 +73,31 @@ split(L, N, Lists) ->
        true ->
 	    [L1, L2|Lists]
     end.
-
-
-pmax(List, N, Death) when length(List) > N ->
-    Lists = split(List, N),
-    CollectPID = self(),
-    [spawn_link(fun() -> worker(L, CollectPID, Death) end) || L <- Lists],
-    Maxes = collect(length(Lists), []),
-    pmax(Maxes, N, Death);
-pmax(List, _, _) ->
-    list:max(List). 
     
 %% Find the max value in List and send result to Collect. 
 
 worker(List, Collect, Death) ->
     death:gamble(Death),
-    Collect!list:max(List).
+    Collect ! list:max(List).
 
 %% Wait for results from all workers. 
 
-collect(N, Maxes) when length(Maxes) < N ->
+collect(N, Maxes, Pid_list) when length(Maxes) < N ->
     receive 
-	{'EXIT', _PID, random_death} ->
-	    collect(N, [-666|Maxes]);
+	{'EXIT', PID, random_death} ->
+	    %% start a worker on the sublist of PID
+	    {_P,Sublist} = lists:keyfind(PID, 1, Pid_list),
+	    CollectPID = self(),
+	    Death = death:start(60),
+	    New_Pid_list = [{spawn_link(fun() -> worker(Sublist, CollectPID, Death) end), Sublist} | Pid_list],
+	    collect(N, Maxes, New_Pid_list);
 	{'EXIT', _PID, normal} ->
-	    collect(N, Maxes);
+	    collect(N, Maxes, Pid_list);
 	Max -> 
-	    collect(N, [Max|Maxes]) 
+	    collect(N, [Max|Maxes], Pid_list) 
     end;
 
-collect(_N, Maxes) ->
+collect(_N, Maxes, _P) ->
     io:format("Collected Maxes = ~w~n", [Maxes]),
     Maxes.
 
